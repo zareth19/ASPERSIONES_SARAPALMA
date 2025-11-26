@@ -67,7 +67,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return back()->withErrors(['document_number' => 'Credenciales incorrectas']);
+        return back()->withInput($request->only('document_number'))->withErrors(['document_number' => 'Credenciales incorrectas']);
     }
 
     public function showRegister()

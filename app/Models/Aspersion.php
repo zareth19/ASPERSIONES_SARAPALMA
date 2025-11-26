@@ -14,12 +14,17 @@ class Aspersion extends Model
         'application_date',
         'week_number',
         'hectares',
-        'mix_description'
+        'volumen_ha',
+        'mix_description',
+        'application_type',
+        'aspersed_lots',
+        'mix_code_id'
     ];
 
     protected $casts = [
         'application_date' => 'date',
-        'hectares' => 'decimal:2'
+        'hectares' => 'decimal:2',
+        'volumen_ha' => 'decimal:2'
     ];
 
     public function finca(): BelongsTo
@@ -37,5 +42,10 @@ class Aspersion extends Model
         return $this->belongsToMany(Product::class, 'aspersion_products')
                     ->withPivot('quantity')
                     ->withTimestamps();
+    }
+
+    public function codigo(): BelongsTo
+    {
+        return $this->belongsTo(Codigo::class, 'mix_code_id');
     }
 }

@@ -6,7 +6,8 @@ use App\Http\Controllers\AspersionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FincaController;
 use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\CodigoController;
+use App\Http\Controllers\MezcalController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -26,6 +27,8 @@ Route::middleware('finca.auth')->group(function () {
     
     // Aspersiones
     Route::resource('aspersions', AspersionController::class);
+    Route::post('/api/mix-codes', [AspersionController::class, 'getMixCodes'])->name('api.mix-codes');
+    Route::post('/api/codigo-products', [AspersionController::class, 'getCodigoProducts'])->name('api.codigo-products');
     
     // Rutas solo para admin
     Route::middleware('admin')->group(function () {
@@ -33,6 +36,11 @@ Route::middleware('finca.auth')->group(function () {
         Route::resource('fincas', FincaController::class);
         Route::post('fincas/{finca}/password', [FincaController::class, 'setPassword']);
         Route::resource('products', ProductController::class);
+        Route::resource('codigos', CodigoController::class);
+        Route::get('codigos/{codigo}/productos', [CodigoController::class, 'productos'])->name('codigos.productos');
+        Route::post('codigos/{codigo}/productos', [CodigoController::class, 'storeMultipleProductos'])->name('codigos.productos.store');
+        Route::delete('codigos/{codigo}/productos/{producto}', [CodigoController::class, 'destroyProducto'])->name('codigos.productos.destroy');
+        Route::resource('mezclas', MezcalController::class);
         
         // Reportes
         Route::get('/reports/excel', [ReportController::class, 'excel'])->name('reports.excel');

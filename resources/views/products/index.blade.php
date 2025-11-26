@@ -10,6 +10,27 @@
     </a>
 </div>
 
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ route('products.index') }}">
+            <div class="row">
+                <div class="col-md-10">
+                    <input type="text" 
+                           class="form-control" 
+                           name="search" 
+                           value="{{ $search }}" 
+                           placeholder="Buscar por nombre comercial, ingrediente activo o categoría...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
@@ -19,6 +40,7 @@
                         <th>Nombre Comercial</th>
                         <th>Ingrediente Activo</th>
                         <th>Unidad</th>
+                        <th>Cantidad</th>
                         <th>Categoría</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -30,6 +52,7 @@
                         <td>{{ $product->commercial_name }}</td>
                         <td>{{ $product->active_ingredient }}</td>
                         <td>{{ $product->unit }}</td>
+                        <td>{{ $product->cantidad_producto ?? 'N/A' }}</td>
                         <td>
                             <span class="badge bg-info">{{ $product->category->name }}</span>
                         </td>
@@ -52,7 +75,7 @@
             </table>
         </div>
         
-        {{ $products->links() }}
+        {{ $products->appends(['search' => $search])->links() }}
     </div>
 </div>
 @endsection

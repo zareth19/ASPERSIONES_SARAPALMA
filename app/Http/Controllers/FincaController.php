@@ -6,7 +6,7 @@ use App\Models\Finca;
 use Illuminate\Http\Request;
 
 class FincaController extends Controller
-{
+{ 
     public function index(Request $request)
     {
         $query = Finca::withCount('aspersions');
@@ -22,7 +22,12 @@ class FincaController extends Controller
             });
         }
         
-        $fincas = $query->paginate(15)->appends($request->query());
+        if ($request->filled('status')) {
+            $query->where('active', $request->status === 'active');
+        }
+        
+        $fincas = $query->paginate(15)->withQueryString();
+        
         return view('fincas.index', compact('fincas'));
     }
 
@@ -35,7 +40,7 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => 'required|string|unique:fincas_temp',
+            'ibm' => 'required|string|unique:fincas',
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255'
         ]);
@@ -60,7 +65,7 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => 'required|string|unique:fincas_temp,ibm,' . $finca->id,
+            'ibm' => 'required|string|unique:fincas,ibm,' . $finca->id,
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255',
             'active' => 'boolean'

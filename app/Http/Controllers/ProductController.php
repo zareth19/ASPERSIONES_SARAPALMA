@@ -8,10 +8,21 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->paginate(15);
-        return view('products.index', compact('products'));
+        $search = $request->get('search');
+        
+        $products = Product::with('category')
+            ->when($search, function($query, $search) {
+                return $query->where('commercial_name', 'like', "%{$search}%")
+                           ->orWhere('active_ingredient', 'like', "%{$search}%")
+                           ->orWhereHas('category', function($q) use ($search) {
+                               $q->where('name', 'like', "%{$search}%");
+                           });
+            })
+            ->paginate(15);
+            
+        return view('products.index', compact('products', 'search'));
     }
 
     public function create()
@@ -26,10 +37,24 @@ class ProductController extends Controller
             'commercial_name' => 'required|string|max:255',
             'active_ingredient' => 'required|string|max:255',
             'unit' => 'required|string|max:50',
-            'category_id' => 'required|exists:product_categories,id'
+            'category_id' => 'required|exists:product_categories,id',
+            'cantidad_producto' => 'nullable|numeric|min:0'
+        ], [
+            'commercial_name.required' => 'El nombre comercial es obligatorio.',
+            'active_ingredient.required' => 'El ingrediente activo es obligatorio.',
+            'unit.required' => 'La unidad es obligatoria.',
+            'category_id.required' => 'La categoría es obligatoria.',
+            'category_id.exists' => 'La categoría seleccionada no es válida.'
         ]);
 
-        Product::create($request->all());
+        Product::create([
+            'commercial_name' => $request->commercial_name,
+            'active_ingredient' => $request->active_ingredient,
+            'unit' => $request->unit,
+            'cantidad_producto' => $request->cantidad_producto,
+            'category_id' => $request->category_id,
+            'active' => true
+        ]);
 
         return redirect()->route('products.index')->with('success', 'Producto creado exitosamente');
     }

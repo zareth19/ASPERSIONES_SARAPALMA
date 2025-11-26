@@ -24,8 +24,11 @@
                         @endif
                         <th>Fecha</th>
                         <th>Semana</th>
+                        <th>Tipo</th>
                         <th>Hectáreas</th>
+                        <th>Lotes</th>
                         <th>Productos</th>
+                        <th>Código Mezcla</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -37,9 +40,29 @@
                         <td>{{ $aspersion->user->name ?? 'Finca' }}</td>
                         @endif
                         <td>{{ $aspersion->application_date->format('d/m/Y') }}</td>
-                        <td>Semana {{ $aspersion->week_number }}</td>
-                        <td>{{ $aspersion->hectares }}</td>
-                        <td>{{ $aspersion->products->count() }} productos</td>
+                        <td><span class="badge bg-secondary">Semana {{ $aspersion->week_number }}</span></td>
+                        <td>
+                            <span class="badge {{ $aspersion->application_type == 'aplicacion_1' ? 'bg-primary' : 'bg-success' }}">
+                                {{ $aspersion->application_type == 'aplicacion_1' ? 'Aplicación 1' : 'Aplicación 2' }}
+                            </span>
+                        </td>
+                        <td>{{ $aspersion->hectares }} ha</td>
+                        <td>
+                            <small class="text-muted">{{ Str::limit($aspersion->aspersed_lots ?? 'N/A', 30) }}</small>
+                        </td>
+                        <td>
+                            @foreach($aspersion->products as $product)
+                                <small class="d-block">{{ $product->commercial_name }}</small>
+                            @endforeach
+                        </td>
+                        <td>
+                            @if($aspersion->codigo)
+                                <code>{{ $aspersion->codigo->codigo }}</code>
+                                <br><small class="text-muted">{{ $aspersion->codigo->mezcla->nombre }}</small>
+                            @else
+                                <small class="text-muted">N/A</small>
+                            @endif
+                        </td>
                         <td>
                             <a href="{{ route('aspersions.show', $aspersion) }}" class="btn btn-sm btn-info">
                                 <i class="fas fa-eye"></i>

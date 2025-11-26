@@ -37,7 +37,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="unit" class="form-label">Unidad *</label>
                     <select class="form-select @error('unit') is-invalid @enderror" id="unit" name="unit" required>
                         <option value="">Seleccione...</option>
@@ -51,7 +51,17 @@
                     @enderror
                 </div>
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
+                    <label for="cantidad_producto" class="form-label">Cantidad Producto</label>
+                    <input type="number" class="form-control @error('cantidad_producto') is-invalid @enderror" 
+                           id="cantidad_producto" name="cantidad_producto" value="{{ old('cantidad_producto', $product->cantidad_producto) }}" 
+                           step="0.01" min="0">
+                    @error('cantidad_producto')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-4 mb-3">
                     <label for="category_id" class="form-label">Categoría *</label>
                     <select class="form-select @error('category_id') is-invalid @enderror" 
                             id="category_id" name="category_id" required>

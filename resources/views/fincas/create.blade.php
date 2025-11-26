@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Crear Finca - Sara Palma')
+@section('title', 'Crear Finca - SaraPalma')
 
 @section('content')
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">

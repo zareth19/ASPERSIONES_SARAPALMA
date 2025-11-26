@@ -24,7 +24,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <strong>Usuario:</strong>
-                        <p>{{ $aspersion->user->name }}</p>
+                        <p>{{ $aspersion->user ? $aspersion->user->name : 'Finca' }}</p>
                     </div>
                 </div>
                 <div class="row">

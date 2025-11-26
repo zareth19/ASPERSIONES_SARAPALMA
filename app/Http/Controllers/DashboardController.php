@@ -17,11 +17,27 @@ class DashboardController extends Controller
         if (session('finca_logged')) {
             $fincaId = session('finca_id');
             $aspersionesRecientes = Aspersion::where('finca_id', $fincaId)
+                                           ->with('products')
                                            ->latest()
                                            ->take(5)
                                            ->get();
             
-            return view('dashboard.finca', compact('aspersionesRecientes'));
+            $totalAspersiones = Aspersion::where('finca_id', $fincaId)->count();
+            $aspersionesMes = Aspersion::where('finca_id', $fincaId)
+                                     ->whereMonth('application_date', now()->month)
+                                     ->whereYear('application_date', now()->year)
+                                     ->count();
+            $hectareasAsperjadas = Aspersion::where('finca_id', $fincaId)
+                                          ->whereMonth('application_date', now()->month)
+                                          ->whereYear('application_date', now()->year)
+                                          ->sum('hectares');
+            
+            return view('dashboard.finca', compact(
+                'aspersionesRecientes', 
+                'totalAspersiones', 
+                'aspersionesMes', 
+                'hectareasAsperjadas'
+            ));
         }
         
         // Si es un usuario normal
@@ -38,12 +54,29 @@ class DashboardController extends Controller
                 'aspersionesMes'
             ));
         } else {
-            $aspersionesRecientes = Aspersion::where('finca_id', $user->finca_id)
+            $fincaId = $user->finca_id;
+            $aspersionesRecientes = Aspersion::where('finca_id', $fincaId)
+                                           ->with('products')
                                            ->latest()
                                            ->take(5)
                                            ->get();
             
-            return view('dashboard.finca', compact('aspersionesRecientes'));
+            $totalAspersiones = Aspersion::where('finca_id', $fincaId)->count();
+            $aspersionesMes = Aspersion::where('finca_id', $fincaId)
+                                     ->whereMonth('application_date', now()->month)
+                                     ->whereYear('application_date', now()->year)
+                                     ->count();
+            $hectareasAsperjadas = Aspersion::where('finca_id', $fincaId)
+                                          ->whereMonth('application_date', now()->month)
+                                          ->whereYear('application_date', now()->year)
+                                          ->sum('hectares');
+            
+            return view('dashboard.finca', compact(
+                'aspersionesRecientes', 
+                'totalAspersiones', 
+                'aspersionesMes', 
+                'hectareasAsperjadas'
+            ));
         }
     }
 }

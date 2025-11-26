@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Sistema de Aspersiones - Sara Palma')</title>
+    <title>@yield('title', 'Sistema de Aspersiones - SaraPalma')</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/image.png') }}">
+    <link rel="shortcut icon" href="{{ asset('images/image.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -20,10 +22,12 @@
                         <i class="fas fa-user me-1"></i>{{ session('finca_logged') ? session('finca_name') : Auth::user()->name }}
                     </a>
                     <ul class="dropdown-menu">
+                        @if(!session('finca_logged'))
                         <li><a class="dropdown-item" href="{{ route('profile') }}">
                             <i class="fas fa-user-circle me-2"></i>Perfil
                         </a></li>
                         <li><hr class="dropdown-divider"></li>
+                        @endif
                         <li>
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
@@ -61,6 +65,14 @@
                    href="{{ route('products.index') }}">
                     <i class="fas fa-flask me-1"></i>Productos
                 </a>
+                <a class="nav-link {{ request()->routeIs('codigos.*') ? 'active fw-bold' : '' }}" 
+                   href="{{ route('codigos.index') }}">
+                    <i class="fas fa-vial me-1"></i>Códigos
+                </a>
+                <a class="nav-link {{ request()->routeIs('mezclas.*') ? 'active fw-bold' : '' }}" 
+                   href="{{ route('mezclas.index') }}">
+                    <i class="fas fa-flask me-1"></i>Mezclas
+                </a>
                 @endif
                 
                 <a class="nav-link {{ request()->routeIs('aspersions.*') ? 'active fw-bold' : '' }}" 
@@ -76,6 +88,7 @@
         @yield('content')
     </main>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     @if(session('welcome_message'))
@@ -97,6 +110,15 @@
 
     @if(session('success'))
     <script>
+        @if(session('codigo_confirmacion'))
+        Swal.fire({
+            title: '¡Éxito!',
+            html: '{{ session('success') }}<br><br><strong>Código de Confirmación:</strong><br><span style="font-size: 1.5em; color: #198754; font-weight: bold;">{{ session('codigo_confirmacion') }}</span>',
+            icon: 'success',
+            confirmButtonText: 'Entendido',
+            allowOutsideClick: false
+        });
+        @else
         Swal.fire({
             title: '¡Éxito!',
             text: '{{ session('success') }}',
@@ -105,6 +127,7 @@
             timerProgressBar: true,
             showConfirmButton: false
         });
+        @endif
     </script>
     @endif
 
@@ -117,6 +140,18 @@
             timer: 6000,
             timerProgressBar: true,
             showConfirmButton: false
+        });
+    </script>
+    @endif
+
+    @if($errors->any())
+    <script>
+        let errorMessages = @json($errors->all());
+        Swal.fire({
+            title: 'Error de Validación',
+            html: errorMessages.map(error => `• ${error}`).join('<br>'),
+            icon: 'error',
+            confirmButtonText: 'Entendido'
         });
     </script>
     @endif
