@@ -15,7 +15,9 @@ class MezclaController extends Controller
 
     public function create()
     {
-        return view('mezclas.create');
+        $productos = \App\Models\Product::select('id', 'name')->limit(100)->get();
+        $codigos = \App\Models\Codigo::select('id', 'codigo')->limit(100)->get();
+        return view('mezclas.create', compact('productos', 'codigos'));
     }
 
     public function store(Request $request)

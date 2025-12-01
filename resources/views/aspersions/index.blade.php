@@ -27,7 +27,6 @@
                         <th>Tipo</th>
                         <th>Hectáreas</th>
                         <th>Lotes</th>
-                        <th>Productos</th>
                         <th>Código Mezcla</th>
                         <th>Acciones</th>
                     </tr>
@@ -50,15 +49,17 @@
                         <td>
                             <small class="text-muted">{{ Str::limit($aspersion->aspersed_lots ?? 'N/A', 30) }}</small>
                         </td>
+                      
                         <td>
-                            @foreach($aspersion->products as $product)
-                                <small class="d-block">{{ $product->commercial_name }}</small>
-                            @endforeach
-                        </td>
-                        <td>
-                            @if($aspersion->codigo)
+                            @if($aspersion->codigos && $aspersion->codigos->count() > 0)
+                                @foreach($aspersion->codigos as $codigo)
+                                    <code>{{ $codigo->codigo }}</code>
+                                    <br><small class="text-muted">{{ $codigo->mezcla?->nombre ?? 'Sin mezcla' }}</small>
+                                    @if(!$loop->last)<br>@endif
+                                @endforeach
+                            @elseif($aspersion->codigo)
                                 <code>{{ $aspersion->codigo->codigo }}</code>
-                                <br><small class="text-muted">{{ $aspersion->codigo->mezcla->nombre }}</small>
+                                <br><small class="text-muted">{{ $aspersion->codigo->mezcla?->nombre ?? 'Sin mezcla' }}</small>
                             @else
                                 <small class="text-muted">N/A</small>
                             @endif

@@ -18,7 +18,8 @@ class Aspersion extends Model
         'mix_description',
         'application_type',
         'aspersed_lots',
-        'mix_code_id'
+        'mix_code_id',
+        'category_id'
     ];
 
     protected $casts = [
@@ -47,5 +48,11 @@ class Aspersion extends Model
     public function codigo(): BelongsTo
     {
         return $this->belongsTo(Codigo::class, 'mix_code_id');
+    }
+
+    public function codigos(): BelongsToMany
+    {
+        return $this->belongsToMany(Codigo::class, 'aspersion_codigo', 'aspersion_id', 'codigo_id')
+                    ->withTimestamps();
     }
 }

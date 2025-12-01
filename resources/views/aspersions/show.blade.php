@@ -56,41 +56,7 @@
                 </div>
                 @endif
             </div>
-        </div>
-
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5><i class="fas fa-flask me-2"></i>Productos Utilizados</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th>Ingrediente Activo</th>
-                                <th>Cantidad</th>
-                                <th>Unidad</th>
-                                <th>Categoría</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($aspersion->products as $product)
-                            <tr>
-                                <td>{{ $product->commercial_name }}</td>
-                                <td>{{ $product->active_ingredient }}</td>
-                                <td>{{ $product->pivot->quantity }}</td>
-                                <td>{{ $product->unit }}</td>
-                                <td>
-                                    <span class="badge bg-info">{{ $product->category->name }}</span>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        </div> 
     </div>
 
     <div class="col-md-4">
@@ -111,7 +77,6 @@
                 <h6><i class="fas fa-chart-pie me-2"></i>Resumen</h6>
             </div>
             <div class="card-body">
-                <p><strong>Total Productos:</strong> {{ $aspersion->products->count() }}</p>
                 <p><strong>Porcentaje de Finca:</strong> 
                     {{ number_format(($aspersion->hectares / $aspersion->finca->hectares) * 100, 1) }}%
                 </p>

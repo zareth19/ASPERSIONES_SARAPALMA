@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AspersionController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\FincaController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CodigoController;
 use App\Http\Controllers\MezcalController;
+use App\Http\Controllers\ReportController;
 
 // Rutas públicas
 Route::get('/', function () {
@@ -29,6 +31,8 @@ Route::middleware('finca.auth')->group(function () {
     Route::resource('aspersions', AspersionController::class);
     Route::post('/api/mix-codes', [AspersionController::class, 'getMixCodes'])->name('api.mix-codes');
     Route::post('/api/codigo-products', [AspersionController::class, 'getCodigoProducts'])->name('api.codigo-products');
+    Route::post('/aspersions/get-codigo-products', [AspersionController::class, 'getCodigoProducts'])
+    ->name('aspersions.get-codigo-products');
     
     // Rutas solo para admin
     Route::middleware('admin')->group(function () {
@@ -43,7 +47,8 @@ Route::middleware('finca.auth')->group(function () {
         Route::resource('mezclas', MezcalController::class);
         
         // Reportes
-        Route::get('/reports/excel', [ReportController::class, 'excel'])->name('reports.excel');
-        Route::get('/reports/fincas', [ReportController::class, 'fincas'])->name('reports.fincas');
+        // Report routes temporarily disabled until ReportController is implemented.
+        // Route::get('/reports/excel', [ReportController::class, 'excel'])->name('reports.excel');
+        // Route::get('/reports/fincas', [ReportController::class, 'fincas'])->name('reports.fincas');
     });
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Finca;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class FincaController extends Controller
 { 
@@ -16,18 +17,11 @@ class FincaController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('ibm', 'like', "%{$search}%")
-                  ->orWhere('administrator_name', 'like', "%{$search}%")
-                  ->orWhere('office_worker_name', 'like', "%{$search}%")
-                  ->orWhere('coordinator_name', 'like', "%{$search}%");
+                  ->orWhere('location', 'like', "%{$search}%");
             });
         }
         
-        if ($request->filled('status')) {
-            $query->where('active', $request->status === 'active');
-        }
-        
-        $fincas = $query->paginate(15)->withQueryString();
-        
+        $fincas = $query->paginate(15);
         return view('fincas.index', compact('fincas'));
     }
 
@@ -40,12 +34,12 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => 'required|string|unique:fincas',
+            'ibm' => ['required', 'string', Rule::unique('fincas', 'ibm')],
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255'
         ]);
 
-        Finca::create($request->all());
+        Finca::create($request->only(['name', 'ibm', 'hectares', 'location']));
 
         return redirect()->route('fincas.index')->with('success', 'Finca creada exitosamente');
     }
@@ -65,13 +59,13 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => 'required|string|unique:fincas,ibm,' . $finca->id,
+            'ibm' => ['required', 'string', Rule::unique('fincas', 'ibm')->ignore($finca->id)],
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255',
             'active' => 'boolean'
         ]);
 
-        $finca->update($request->all());
+        $finca->update($request->only(['name', 'ibm', 'hectares', 'location', 'active']));
 
         return redirect()->route('fincas.index')->with('success', 'Finca actualizada exitosamente');
     }

@@ -15,10 +15,12 @@ body {
 .login-container {
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     z-index: 10;
+    gap: 20px;
 }
 .login-card {
     background: rgba(255, 255, 255, 0.7);
@@ -107,6 +109,15 @@ body {
 .is-invalid {
     border-color: #dc3545;
 }
+.developer-info {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    padding: 20px;
+}
+.developer-info p {
+    margin: 0;
+}
 </style>
 @endpush
 
@@ -157,6 +168,9 @@ body {
                 </button>
             </div>
         </form>
+    </div>
+    <div class="developer-info">
+        <p>Desarrollado por <strong style="color: #545c57;">Zareth Fuentes</strong></p>
     </div>
 </div>
 @endsection

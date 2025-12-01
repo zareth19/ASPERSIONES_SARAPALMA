@@ -29,6 +29,41 @@
             </div>
 
 
+            <div class="mb-3">
+                <label for="producto_id" class="form-label">Producto *</label>
+                <select class="form-select @error('producto_id') is-invalid @enderror" 
+                        id="producto_id" 
+                        name="producto_id" 
+                        required>
+                    <option value="">Seleccionar producto...</option>
+                    @foreach($productos as $producto)
+                        <option value="{{ $producto->id }}" {{ old('producto_id') == $producto->id ? 'selected' : '' }}>
+                            {{ $producto->commercial_name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('producto_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label for="codigo_id" class="form-label">Código *</label>
+                <select class="form-select @error('codigo_id') is-invalid @enderror" 
+                        id="codigo_id" 
+                        name="codigo_id" 
+                        required>
+                    <option value="">Seleccionar código...</option>
+                    @foreach($codigos as $codigo)
+                        <option value="{{ $codigo->id }}" {{ old('codigo_id') == $codigo->id ? 'selected' : '' }}>
+                            {{ $codigo->codigo }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('codigo_id')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
 
             <div class="d-grid">
                 <button type="submit" class="btn btn-success">
@@ -39,4 +74,3 @@
     </div>
 </div>
 @endsection
-
