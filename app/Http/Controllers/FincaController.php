@@ -34,7 +34,7 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => ['required', 'string', Rule::unique('fincas', 'ibm')],
+            'ibm' => ['required', 'string', Rule::unique('fincas_temp', 'ibm')],
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255'
         ]);
@@ -59,7 +59,7 @@ class FincaController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'ibm' => ['required', 'string', Rule::unique('fincas', 'ibm')->ignore($finca->id)],
+            'ibm' => ['required', 'string', Rule::unique('fincas_temp', 'ibm')->ignore($finca->id)],
             'hectares' => 'required|numeric|min:0.01',
             'location' => 'nullable|string|max:255',
             'active' => 'boolean'

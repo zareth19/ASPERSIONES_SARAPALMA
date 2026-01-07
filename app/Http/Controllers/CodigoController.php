@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class CodigoController extends Controller
 {
-    public function create(Mezcla $mezcla)
+    public function create(Mezcla $mezcla = null)
     {
         return view('codigos.create', compact('mezcla'));
     }
@@ -24,16 +24,19 @@ class CodigoController extends Controller
     {
         $search = $request->get('search');
         
-        $codigos = Codigo::with('mezcla')
+        $mezclas = Mezcla::withCount('codigos')
+            ->with(['codigos' => function($query) {
+                $query->withCount('aspersions');
+            }])
             ->when($search, function($query, $search) {
-                return $query->where('codigo', 'like', "%{$search}%")
-                           ->orWhereHas('mezcla', function($q) use ($search) {
-                               $q->where('nombre', 'like', "%{$search}%");
+                return $query->where('nombre', 'like', "%{$search}%")
+                           ->orWhereHas('codigos', function($q) use ($search) {
+                               $q->where('codigo', 'like', "%{$search}%");
                            });
             })
             ->get();
             
-        return view('codigos.index', compact('codigos', 'search'));
+        return view('codigos.index', compact('mezclas', 'search'));
     }
 
     public function store(Request $request)
@@ -44,7 +47,7 @@ class CodigoController extends Controller
         ], [
             'codigo.unique' => 'El código ya ha sido tomado.',
             'codigo.required' => 'El campo código es obligatorio.',
-            'mezcla_id.required' => 'El campo mezcla es obligatorio.',
+            'mezcla_id.required' => 'Debe seleccionar una mezcla.',
             'mezcla_id.exists' => 'La mezcla seleccionada es inválida.'
         ]);
 
@@ -127,5 +130,15 @@ class CodigoController extends Controller
         $codigo->update($request->only('mezcla_id', 'codigo'));
 
         return redirect()->route('mezclas.show', $codigo->mezcla_id)->with('success', 'Código actualizado exitosamente');
+    }
+
+    public function destroy(Codigo $codigo)
+    {
+        if ($codigo->aspersions()->count() > 0) {
+            return back()->with('error', 'No se puede eliminar el código porque está asociado a aspersiones.');
+        }
+
+        $codigo->delete();
+        return redirect()->route('codigos.index')->with('success', 'Código eliminado exitosamente');
     }
 }

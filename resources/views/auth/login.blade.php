@@ -118,6 +118,9 @@ body {
 .developer-info p {
     margin: 0;
 }
+.developer-info strong {
+    color: #545c57;
+}
 </style>
 @endpush
 
@@ -170,7 +173,7 @@ body {
         </form>
     </div>
     <div class="developer-info">
-        <p>Desarrollado por <strong style="color: #545c57;">Zareth Fuentes</strong></p>
+        <p>Desarrollado por <strong>Zareth Fuentes</strong></p>
     </div>
 </div>
 @endsection

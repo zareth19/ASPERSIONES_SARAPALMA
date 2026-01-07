@@ -75,13 +75,61 @@ class AspersionController extends Controller
         $fincaLogged = session('finca_logged');
 
         $rules = [
-            'application_date' => 'required|date',
-            'volumen_ha' => "required|numeric|min:0.01|max:{$maxHectares}",
-            'codigo_id' => 'nullable|exists:codigos,id',
-            'aspersed_lots' => 'nullable|string',
-            'mix_description' => 'nullable|string',
-            'categories' => 'nullable|array',
-            'categories.*' => 'nullable|exists:product_categories,id'
+            'application_date' => [
+                'required',
+                'date',
+                'date_format:Y-m-d',
+                'after_or_equal:2020-01-01',
+                'before_or_equal:' . date('Y-m-d', strtotime('+1 year'))
+            ],
+            'volumen_ha' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                "max:{$maxHectares}",
+                'regex:/^\d+(\.\d{1,2})?$/'
+            ],
+            'codigo_id' => [
+                'nullable',
+                'integer',
+                'exists:codigos,id',
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && (!is_numeric($value) || $value <= 0)) {
+                        $fail('Código inválido.');
+                    }
+                }
+            ],
+            'aspersed_lots' => [
+                'nullable',
+                'string',
+                'max:1000',
+                function ($attribute, $value, $fail) {
+                    if ($value && preg_match('/[<>"\'\/\\]/', $value)) {
+                        $fail('Los lotes contienen caracteres no permitidos.');
+                    }
+                }
+            ],
+            'mix_description' => [
+                'nullable',
+                'string',
+                'max:2000',
+                function ($attribute, $value, $fail) {
+                    if ($value && preg_match('/[<>"\'\/\\]/', $value)) {
+                        $fail('La descripción contiene caracteres no permitidos.');
+                    }
+                }
+            ],
+            'categories' => 'nullable|array|max:10',
+            'categories.*' => [
+                'nullable',
+                'integer',
+                'exists:product_categories,id',
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && (!is_numeric($value) || $value <= 0)) {
+                        $fail('Categoría inválida.');
+                    }
+                }
+            ]
         ];
 
         // Solo usuarios no finca deben seleccionar productos
@@ -120,17 +168,25 @@ class AspersionController extends Controller
             $categoryId = $categories[0] ?: null;
         }
 
-        $aspersion = Aspersion::create([
+        // Sanitizar datos de entrada
+        $sanitizedData = [
             'finca_id' => $fincaId,
             'user_id' => $userId,
             'application_date' => $request->application_date,
             'week_number' => $weekNumber,
-            'hectares' => $request->volumen_ha,
+            'hectares' => round((float) $request->volumen_ha, 2),
             'mix_code_id' => $codigoId,
-            'aspersed_lots' => $request->aspersed_lots,
-            'mix_description' => $request->mix_description,
+            'aspersed_lots' => $request->aspersed_lots ? strip_tags(trim($request->aspersed_lots)) : null,
+            'mix_description' => $request->mix_description ? strip_tags(trim($request->mix_description)) : null,
             'category' => $categoryId
-        ]);
+        ];
+        
+        // Validaciones adicionales de seguridad
+        if ($sanitizedData['hectares'] <= 0 || $sanitizedData['hectares'] > $maxHectares) {
+            return back()->withErrors(['volumen_ha' => 'Volumen inválido'])->withInput();
+        }
+        
+        $aspersion = Aspersion::create($sanitizedData);
 
         // Adjuntar todos los códigos seleccionados en el pivot (si se enviaron)
         $codigoIdsToAttach = [];
@@ -224,17 +280,26 @@ class AspersionController extends Controller
 
     public function getMixCodes(Request $request)
     {
-        $productIds = $request->input('product_ids', []);
+        $codigo = $request->input('codigo');
         
-        if (empty($productIds)) {
+        if (empty($codigo)) {
             return response()->json([]);
         }
         
-        $mixCodes = \App\Models\MixCode::whereHas('products', function($query) use ($productIds) {
-            $query->whereIn('product_id', $productIds);
-        })->get(['id', 'mix_type', 'mix_code']);
+        // Buscar códigos que coincidan parcialmente
+        $codigos = \App\Models\Codigo::with('mezcla')
+            ->where('codigo', 'like', $codigo . '%')
+            ->limit(10)
+            ->get()
+            ->map(function($item) {
+                return [
+                    'codigo' => $item->codigo,
+                    'nombre_mezcla' => $item->mezcla?->nombre ?? 'Sin mezcla',
+                    'categoria' => 'General' // Por ahora categoría fija hasta implementar relación
+                ];
+            });
         
-        return response()->json($mixCodes);
+        return response()->json($codigos);
     }
 
     public function getCodigoProducts(Request $request)
@@ -289,5 +354,79 @@ class AspersionController extends Controller
                    is_numeric($product['id']) && 
                    is_numeric($product['quantity']);
         });
+    }
+
+    public function createNew()
+    {
+        $categories = ProductCategory::all();
+        return view('aspersions.create_new', compact('categories'));
+    }
+
+    public function storeNew(Request $request)
+    {
+        $request->validate([
+            'mix_name' => 'required|string|max:255',
+            'codigos' => 'required|array|min:1',
+            'codigos.*' => 'required|string',
+            'application_date' => 'required|date',
+            'volumen_ha' => 'required|numeric|min:0.01',
+            'aspersed_lots' => 'nullable|string',
+            'mix_description' => 'nullable|string',
+            'productos' => 'required|array'
+        ]);
+
+        $weekNumber = $this->calculateWeekNumber($request->application_date);
+        $fincaId = session('finca_logged') ? session('finca_id') : Auth::user()->finca_id;
+        $userId = session('finca_logged') ? null : Auth::id();
+
+        // Crear la aspersión
+        $aspersion = Aspersion::create([
+            'finca_id' => $fincaId,
+            'user_id' => $userId,
+            'application_date' => $request->application_date,
+            'week_number' => $weekNumber,
+            'hectares' => $request->volumen_ha,
+            'aspersed_lots' => $request->aspersed_lots,
+            'mix_description' => $request->mix_description . ' - Mezcla: ' . $request->mix_name
+        ]);
+
+        // Crear códigos y asociar productos
+        foreach ($request->codigos as $codigoIndex => $codigoValue) {
+            // Crear o encontrar el código
+            $codigo = \App\Models\Codigo::firstOrCreate([
+                'codigo' => $codigoValue
+            ], [
+                'mezcla_id' => null // Se puede asociar a una mezcla después
+            ]);
+
+            // Asociar productos a este código si existen
+            if (isset($request->productos[$codigoIndex])) {
+                foreach ($request->productos[$codigoIndex] as $producto) {
+                    if (isset($producto['name']) && isset($producto['quantity'])) {
+                        // Buscar el producto por nombre
+                        $productModel = Product::where('commercial_name', 'like', '%' . $producto['name'] . '%')
+                                              ->where('active', true)
+                                              ->first();
+                        
+                        if ($productModel) {
+                            // Asociar producto al código si no existe la relación
+                            if (!$codigo->products()->where('product_id', $productModel->id)->exists()) {
+                                $codigo->products()->attach($productModel->id, [
+                                    'quantity' => $producto['quantity']
+                                ]);
+                            }
+                            
+                            // Asociar producto a la aspersión
+                            $aspersion->products()->attach($productModel->id, [
+                                'quantity' => $producto['quantity']
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('aspersions.index')
+                        ->with('success', 'Mezcla creada exitosamente');
     }
 }

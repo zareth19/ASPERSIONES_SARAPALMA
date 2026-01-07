@@ -91,4 +91,100 @@ class ProductController extends Controller
         $product->update(['active' => false]);
         return redirect()->route('products.index')->with('success', 'Producto desactivado exitosamente');
     }
+
+    public function checkExists(Request $request)
+    {
+        $exists = Product::where('commercial_name', 'like', '%' . $request->name . '%')
+                        ->where('active', true)
+                        ->exists();
+        
+        return response()->json(['exists' => $exists]);
+    }
+
+    public function storeAjax(Request $request)
+    {
+        try {
+            $request->validate([
+                'commercial_name' => [
+                    'required',
+                    'string',
+                    'min:2',
+                    'max:255'
+                ],
+                'active_ingredient' => [
+                    'required',
+                    'string',
+                    'min:2',
+                    'max:255'
+                ],
+                'category_id' => [
+                    'required',
+                    'integer',
+                    'exists:product_categories,id',
+                    function ($attribute, $value, $fail) {
+                        if (!is_numeric($value) || $value <= 0) {
+                            $fail('Categoría inválida.');
+                        }
+                    }
+                ],
+                'presentation' => [
+                    'nullable',
+                    'string',
+                    'max:100'
+                ]
+            ]);
+
+            // Sanitizar datos de entrada
+            $sanitizedData = [
+                'commercial_name' => strip_tags(trim($request->commercial_name)),
+                'active_ingredient' => strip_tags(trim($request->active_ingredient)),
+                'category_id' => (int) $request->category_id,
+                'unit' => 'ml', // Unidad por defecto
+                'cantidad_producto' => 0,
+                'presentation' => $request->presentation ? strip_tags(trim($request->presentation)) : null,
+                'active' => true
+            ];
+            
+            // Validaciones adicionales de seguridad
+            if (strlen($sanitizedData['commercial_name']) < 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nombre comercial muy corto'
+                ], 422);
+            }
+            
+            if (strlen($sanitizedData['active_ingredient']) < 2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ingrediente activo muy corto'
+                ], 422);
+            }
+            
+            $product = Product::create($sanitizedData);
+
+            return response()->json([
+                'success' => true,
+                'product' => $product,
+                'message' => 'Producto creado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function getSuggestions(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        $products = Product::where('active', true)
+            ->where('commercial_name', 'like', '%' . $query . '%')
+            ->select('id', 'commercial_name', 'active_ingredient')
+            ->limit(10)
+            ->get();
+            
+        return response()->json($products);
+    }
 }

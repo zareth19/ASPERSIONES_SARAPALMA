@@ -14,7 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'finca.auth' => \App\Http\Middleware\FincaAuth::class,
+            'security' => \App\Http\Middleware\SecurityMiddleware::class,
         ]);
+        
+        // Aplicar middleware de seguridad globalmente
+        $middleware->append(\App\Http\Middleware\SecurityMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

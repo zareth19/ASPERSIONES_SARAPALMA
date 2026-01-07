@@ -8,7 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\FincaController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CodigoController;
-use App\Http\Controllers\MezcalController;
+use App\Http\Controllers\MezclaController;
 use App\Http\Controllers\ReportController;
 
 // Rutas públicas
@@ -29,10 +29,13 @@ Route::middleware('finca.auth')->group(function () {
     
     // Aspersiones
     Route::resource('aspersions', AspersionController::class);
-    Route::post('/api/mix-codes', [AspersionController::class, 'getMixCodes'])->name('api.mix-codes');
+    Route::get('/api/mix-codes', [AspersionController::class, 'getMixCodes'])->name('api.mix-codes');
     Route::post('/api/codigo-products', [AspersionController::class, 'getCodigoProducts'])->name('api.codigo-products');
     Route::post('/aspersions/get-codigo-products', [AspersionController::class, 'getCodigoProducts'])
     ->name('aspersions.get-codigo-products');
+    
+    // Productos (acceso general para sugerencias)
+    Route::get('/products/suggestions', [ProductController::class, 'getSuggestions']);
     
     // Rutas solo para admin
     Route::middleware('admin')->group(function () {
@@ -40,11 +43,14 @@ Route::middleware('finca.auth')->group(function () {
         Route::resource('fincas', FincaController::class);
         Route::post('fincas/{finca}/password', [FincaController::class, 'setPassword']);
         Route::resource('products', ProductController::class);
+        Route::post('/products/check-exists', [ProductController::class, 'checkExists']);
+        Route::post('/products/store-ajax', [ProductController::class, 'storeAjax']);
+
         Route::resource('codigos', CodigoController::class);
         Route::get('codigos/{codigo}/productos', [CodigoController::class, 'productos'])->name('codigos.productos');
         Route::post('codigos/{codigo}/productos', [CodigoController::class, 'storeMultipleProductos'])->name('codigos.productos.store');
         Route::delete('codigos/{codigo}/productos/{producto}', [CodigoController::class, 'destroyProducto'])->name('codigos.productos.destroy');
-        Route::resource('mezclas', MezcalController::class);
+        Route::resource('mezclas', MezclaController::class);
         
         // Reportes
         // Report routes temporarily disabled until ReportController is implemented.

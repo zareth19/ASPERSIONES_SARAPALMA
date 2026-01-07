@@ -111,9 +111,9 @@
                     <button class="btn btn-outline-primary" onclick="openPowerBI()">
                         <i class="fas fa-chart-line me-2"></i>Abrir Power BI
                     </button>
-                    <a href="{{ route('reports.fincas') }}" class="btn btn-outline-secondary">
+                    <button class="btn btn-outline-secondary" onclick="showFincasReport()">
                         <i class="fas fa-map me-2"></i>Reporte por Fincas
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -135,12 +135,11 @@ function exportExcel() {
         denyButtonText: 'Personalizado'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = '{{ route("reports.excel") }}?period=month';
+            Swal.fire('Funcionalidad en desarrollo', 'Exportar este mes', 'info');
         } else if (result.isDenied) {
-            // Aquí se podría abrir un modal para seleccionar fechas
-            Swal.fire('Funcionalidad en desarrollo', '', 'info');
+            Swal.fire('Funcionalidad en desarrollo', 'Exportar personalizado', 'info');
         } else if (result.dismiss === Swal.DismissReason.cancel) {
-            window.location.href = '{{ route("reports.excel") }}?period=all';
+            Swal.fire('Funcionalidad en desarrollo', 'Exportar todo', 'info');
         }
     });
 }
@@ -156,6 +155,15 @@ function openPowerBI() {
     });
     // Aquí se abriría la URL de Power BI
     // window.open('URL_POWER_BI', '_blank');
+}
+
+function showFincasReport() {
+    Swal.fire({
+        title: 'Reporte por Fincas',
+        text: 'Funcionalidad en desarrollo',
+        icon: 'info',
+        confirmButtonText: 'Entendido'
+    });
 }
 </script>
 @endpush

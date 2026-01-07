@@ -70,7 +70,7 @@
                 <p><strong>Este Mes:</strong> {{ $product->aspersions->where('created_at', '>=', now()->startOfMonth())->count() }}</p>
                 <p><strong>Última Vez Usado:</strong> 
                     @if($product->aspersions->count() > 0)
-                        {{ $product->aspersions->latest()->first()->application_date->format('d/m/Y') }}
+                        {{ $product->aspersions->sortByDesc('application_date')->first()->application_date->format('d/m/Y') }}
                     @else
                         Nunca usado
                     @endif

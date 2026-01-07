@@ -79,7 +79,7 @@
                             @foreach($finca->aspersions->take(10) as $aspersion)
                             <tr>
                                 <td>{{ $aspersion->application_date->format('d/m/Y') }}</td>
-                                <td>{{ $aspersion->user->name }}</td>
+                                <td>{{ $aspersion->user?->name ?? 'Sistema' }}</td>
                                 <td>{{ $aspersion->hectares }} ha</td>
                                 <td>{{ $aspersion->products->count() }} productos</td>
                             </tr>
@@ -120,7 +120,7 @@
                 <p><strong>Este Mes:</strong> {{ $finca->aspersions->where('application_date', '>=', now()->startOfMonth())->count() }}</p>
                 <p><strong>Última Aspersión:</strong> 
                     @if($finca->aspersions->count() > 0)
-                        {{ $finca->aspersions->latest()->first()->application_date->format('d/m/Y') }}
+                        {{ $finca->aspersions->sortByDesc('application_date')->first()->application_date->format('d/m/Y') }}
                     @else
                         Sin aspersiones
                     @endif
